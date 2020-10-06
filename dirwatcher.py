@@ -10,6 +10,7 @@ import sys
 import time
 import signal
 import argparse
+import os
 import logging
 
 
@@ -20,20 +21,16 @@ global_dict = {}
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-
 formatter = logging.Formatter('%(asctime)s:%(name)s:%(message)s')
-
-file_handler = logging.FileHandler('file.log')
+file_handler = logging.FileHandler("file.log")
 file_handler.setFormatter(formatter)
-
 stream_handler = logging.StreamHandler()
-
 logger.addHandler(file_handler)
 logger.addHandler(stream_handler)
 
 
 def directory_dict(ns):
-    polling_dict = {}
+    polling_dict = dict()
     try:
         if os.path.isdir(ns.path):
             for content in (os.walk.ns.path):
@@ -45,19 +42,19 @@ def directory_dict(ns):
             logger.info("The directory the person checking for does not exist")
     except Exception as e:
         logger.exception(e)
-    dict_finding(polling_dict, ns)
+    dir_finding(polling_dict, ns)
 
 
-def dict_finding(polling_dict, ns):
+def dir_finding(polling_dict, ns):
     try:
-        for files in polling_dict:
-            if files not in global_dict:
-                logger.info(f'{files} has been added in {ns.path}')
-                global_dict[files] = []
-        for files in global_dict:
-            if files not in polling_dict:
-                logger.info(f'{files} has been removed from {ns.path}')
-                del global_dict[files]
+        for file in polling_dict:
+            if file not in global_dict:
+                logger.info(f'{file} has been added in {ns.path}')
+                global_dict[file] = []
+        for file in global_dict:
+            if file not in polling_dict:
+                logger.info(f'{file} has been removed from {ns.path}')
+                del global_dict[file]
     except Exception as e:
         logger.info(e)
     search_for_magic(ns)
@@ -65,14 +62,15 @@ def dict_finding(polling_dict, ns):
 
 def search_for_magic(ns):
     try:
-        for files in global_dict:
+        for file in global_dict:
             with open(ns.filename) as f:
                 line_files = f.readlines()
                 for i, lines in enumerate(line_files):
                     if ns.magic_string in lines:
-                        if i not in global_dict[files]:
-                            global_dict[files].append(i)
-                            logger.info(f'{files} found magic text in this file')
+                        if i not in global_dict[file]:
+                            global_dict[file].append(i)
+                            logger.info(
+                                f'{file} found magic text in this file')
     except Exception as e:
         logger.info(e)
 
@@ -89,9 +87,6 @@ def create_parser():
         'path', help='creates a path for file', action="store_true")
     parser.add_argument(
         'magic', help='creates a magic string', action="store_true")
-    # The nargs option instructs the parser to expect 1 or more
-    # filenames. It will also expand wildcards just like the shell.
-    # e.g. 'baby*.html' will work.
     parser.add_argument('files', help='filename(s) to parse', nargs='+')
     return parser
 
