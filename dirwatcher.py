@@ -33,13 +33,13 @@ def directory_dict(ns):
     polling_dict = dict()
     try:
         if os.path.isdir(ns.path):
-            for content in (os.walk.ns.path):
+            for content in os.walk(ns.path):
                 files = content[2]
             for file in files:
                 if file.endswith(ns.e):
-                    polling_dict.setdefault(file[list()])
+                    polling_dict.setdefault(file, [])
         else:
-            logger.info("The directory the person checking for does not exist")
+            logger.info(f"The directory {ns.path} does not exist")
     except Exception as e:
         logger.exception(e)
     dir_finding(polling_dict, ns)
@@ -63,10 +63,10 @@ def dir_finding(polling_dict, ns):
 def search_for_magic(ns):
     try:
         for file in global_dict:
-            with open(ns.filename) as f:
+            with open(ns.path + "/" + file) as f:
                 line_files = f.readlines()
                 for i, lines in enumerate(line_files):
-                    if ns.magic_string in lines:
+                    if ns.magic in lines:
                         if i not in global_dict[file]:
                             global_dict[file].append(i)
                             logger.info(
@@ -78,16 +78,15 @@ def search_for_magic(ns):
 def create_parser():
     """Create a command line parser object with 2 argument definitions."""
     parser = argparse.ArgumentParser(
-        description="Extracts")
+        description="In search of magic phrases")
     parser.add_argument(
-        '-e', 'EXT', help='extension of the file', default=".txt")
+        '-e', help='extension of the file', default=".txt")
     parser.add_argument(
-        '-i', 'INTERVAL', help='polling interval', default=1)
+        '-i', help='polling interval', default=1)
     parser.add_argument(
-        'path', help='creates a path for file', action="store_true")
+        'path', help='path to watch for')
     parser.add_argument(
-        'magic', help='creates a magic string', action="store_true")
-    parser.add_argument('files', help='filename(s) to parse', nargs='+')
+        'magic', help='creates a magic string')
     return parser
 
 
@@ -99,10 +98,10 @@ def signal_handler(sig_num, frame):
     :param frame: Not used
     :return None
     """
-    global stay_running
+    global exit_flag
     # log the associated signal name
-    logger.warn('Received ' + signal.Signals(sig_num).name)
-    stay_running = False
+    logger.warning('Received ' + signal.Signals(sig_num).name)
+    exit_flag = True
 
 
 def main(args):
